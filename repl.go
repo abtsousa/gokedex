@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/abtsousa/gokedex/internal/pokeapi"
 	"os"
 	"strings"
 )
@@ -14,14 +15,14 @@ type cliCommand struct {
 }
 
 type Config struct {
-	next string
-	prev string
+	client pokeapi.Client
+	next   *string
+	prev   *string
 }
 
 var mp = map[string]cliCommand{}
-var cfg = Config{}
 
-func startRepl() {
+func startRepl(cfg *Config) {
 	mp = map[string]cliCommand{
 		"help": {
 			name:        "help",
@@ -55,7 +56,7 @@ func startRepl() {
 		if !ok {
 			fmt.Printf("Unknown command %s\n", in[0])
 		} else {
-			err := cmd.callback(&cfg)
+			err := cmd.callback(cfg)
 			if err != nil {
 				fmt.Printf("An error occurred: %v", err)
 			}

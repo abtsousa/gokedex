@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 )
 
 func commandMapN(cfg *Config) error {
@@ -12,64 +9,33 @@ func commandMapN(cfg *Config) error {
 }
 
 func commandMapP(cfg *Config) error {
+	if cfg.prev == nil {
+		fmt.Println("You're already on the first page.")
+		return nil
+	}
 	return commandMap(true, cfg)
 }
 
 func commandMap(goBack bool, cfg *Config) error {
-	type Locations struct {
-		Count    int     `json:"count"`
-		Next     *string `json:"next"`
-		Previous *string `json:"previous"`
-		Results  []struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"results"`
-	}
 
-	url := "https://pokeapi.co/api/v2/location-area/"
-
+	var url *string
 	if goBack {
-		if cfg.prev != "" {
-			url = cfg.prev
-		} else {
-			fmt.Println("You're on the first page.")
-			return nil
-		}
+		url = cfg.prev
 	} else {
-		if cfg.next != "" {
-			url = cfg.next
-		}
-	}
-	rsp, err := http.Get(url)
-	if err != nil {
-		return fmt.Errorf("couldn't get response: %v", err)
+		url = cfg.next
 	}
 
-	dat, err := io.ReadAll(rsp.Body)
+	loc, err := cfg.client.ListLocations(url)
 	if err != nil {
-		return fmt.Errorf("couldn't parse received data: %v", err)
+		return err
 	}
 
-	loc := Locations{}
-	err = json.Unmarshal(dat, &loc)
-	if err != nil {
-		return fmt.Errorf("couldn't unmarshal received data: %v", err)
-	}
+	cfg.next = loc.Next
+	cfg.prev = loc.Previous
 
-	if loc.Next != nil {
-		cfg.next = *loc.Next
-	} else {
-		cfg.next = ""
-	}
-	if loc.Previous != nil {
-		cfg.prev = *loc.Previous
-	} else {
-		cfg.prev = ""
-	}
 	for _, r := range loc.Results {
 		fmt.Println(r.Name)
 	}
-
-	fmt.Printf("***DEBUG*** cfg.prev: %s\tcfg.next: %s\n", cfg.prev, cfg.next)
+	// fmt.Printf("***DEBUG:***\nloc.Next: %v\nloc.Previous: %v\ncfg.next: %v\n cfg.prev: %v", loc.Next, loc.Previous, cfg.next, cfg.prev)
 	return nil
 }
