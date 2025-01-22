@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/abtsousa/gokedex/internal/pokeapi"
 	"os"
 	"strings"
+
+	"github.com/abtsousa/gokedex/internal/cache"
+	"github.com/abtsousa/gokedex/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -16,11 +18,12 @@ type cliCommand struct {
 
 type Config struct {
 	client pokeapi.Client
+	cache  *cache.Cache
 	next   *string
 	prev   *string
 }
 
-var mp = map[string]cliCommand{}
+var mp map[string]cliCommand
 
 func startRepl(cfg *Config) {
 	mp = map[string]cliCommand{

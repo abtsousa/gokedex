@@ -25,7 +25,7 @@ func commandMap(goBack bool, cfg *Config) error {
 		url = cfg.next
 	}
 
-	loc, err := cfg.client.ListLocations(url)
+	loc, err := cfg.client.ListLocations(url, cfg.cache)
 	if err != nil {
 		return err
 	}
@@ -36,6 +36,6 @@ func commandMap(goBack bool, cfg *Config) error {
 	for _, r := range loc.Results {
 		fmt.Println(r.Name)
 	}
-	// fmt.Printf("***DEBUG:***\nloc.Next: %v\nloc.Previous: %v\ncfg.next: %v\n cfg.prev: %v", loc.Next, loc.Previous, cfg.next, cfg.prev)
+	// fmt.Printf("***DEBUG:\nloc.Next: %v\nloc.Previous: %v\ncfg.next: %v\n cfg.prev: %v", loc.Next, loc.Previous, cfg.next, cfg.prev)
 	return nil
 }

@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/abtsousa/gokedex/internal/cache"
 )
 
 type Client struct {
@@ -20,10 +22,22 @@ func NewClient(timeout time.Duration) Client {
 	}
 }
 
-func (c *Client) ListLocations(pageURL *string) (LocationsList, error) {
+func (c *Client) ListLocations(pageURL *string, cache *cache.Cache) (LocationsList, error) {
 	url := baseURL + "/location-area"
 	if pageURL != nil {
 		url = *pageURL
+	}
+
+	if cache != nil {
+		if cached, exists := cache.Get(url); exists {
+			var loc LocationsList
+			if err := json.Unmarshal(cached, &loc); err == nil {
+				return loc, nil
+			} else {
+				fmt.Println("[INFO] Found invalid data in cache. Cleaning.")
+				cache.Remove(url)
+			}
+		}
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -40,6 +54,9 @@ func (c *Client) ListLocations(pageURL *string) (LocationsList, error) {
 	if err != nil {
 		return LocationsList{}, fmt.Errorf("couldn't parse received data: %v", err)
 	}
+
+	// Add to cache
+	cache.Add(url, dat)
 
 	loc := LocationsList{}
 	err = json.Unmarshal(dat, &loc)
