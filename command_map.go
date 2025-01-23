@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-func commandMapN(cfg *Config) error {
+func commandMapN(cfg *Config, params ...string) error {
 	return commandMap(false, cfg)
 }
 
-func commandMapP(cfg *Config) error {
+func commandMapP(cfg *Config, params ...string) error {
 	if cfg.prev == nil {
 		fmt.Println("You're already on the first page.")
 		return nil

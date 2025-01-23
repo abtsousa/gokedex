@@ -13,14 +13,15 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*Config, ...string) error
 }
 
 type Config struct {
-	client pokeapi.Client
-	cache  *cache.Cache
-	next   *string
-	prev   *string
+	client  pokeapi.Client
+	cache   *cache.Cache
+	pokedex pokedex
+	next    *string
+	prev    *string
 }
 
 var mp map[string]cliCommand
@@ -42,6 +43,21 @@ func startRepl(cfg *Config) {
 			description: "Show previous 20 locations",
 			callback:    commandMapP,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Show all the Pokémon in an area",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a Pokémon",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a caught Pokémon",
+			callback:    commandInspect,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -59,9 +75,9 @@ func startRepl(cfg *Config) {
 		if !ok {
 			fmt.Printf("Unknown command %s\n", in[0])
 		} else {
-			err := cmd.callback(cfg)
+			err := cmd.callback(cfg, in[1:]...)
 			if err != nil {
-				fmt.Printf("An error occurred: %v", err)
+				fmt.Printf("An error occurred: %v\n", err)
 			}
 		}
 	}
