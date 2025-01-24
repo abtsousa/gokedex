@@ -33,7 +33,7 @@ func commandCatch(cfg *Config, params ...string) error {
 	if isCaught(pkm.BaseExperience) {
 		fmt.Printf("%s was caught!\n", params[0])
 		if _, bool := cfg.pokedex[pkm.Name]; !bool {
-			fmt.Printf("You may now inspect it with the inspect command.")
+			fmt.Println("You may now inspect it with the inspect command.")
 			cfg.pokedex[pkm.Name] = pkm
 		}
 	} else {
